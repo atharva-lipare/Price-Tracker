@@ -2,7 +2,9 @@ package com.example.pricetracker;
 
 import android.graphics.drawable.Drawable;
 
-public class SiteToggler {
+import java.io.Serializable;
+
+public class SiteToggler implements Serializable {
     private String siteName;
     private String siteUrl;
     private String searchQuery;
@@ -36,4 +38,6 @@ public class SiteToggler {
     public int getDrawable() {
         return drawable;
     }
+
+    public void setChecked(boolean checked) { this.checked = checked; }
 }

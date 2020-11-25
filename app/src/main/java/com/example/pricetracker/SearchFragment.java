@@ -1,14 +1,20 @@
 package com.example.pricetracker;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.SearchView;
+
+import java.util.ArrayList;
 
 import static com.example.pricetracker.MainActivity.siteTogglers;
 
@@ -21,6 +27,8 @@ public class SearchFragment extends Fragment {
 
     RecyclerView recyclerView;
     WebSiteToggleAdapter webSiteToggleAdapter;
+    Button searchButton;
+    SearchView searchView;
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -69,6 +77,17 @@ public class SearchFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_search, container, false);
         recyclerView = view.findViewById(R.id.recycler_view_site_selector);
         recyclerView.setAdapter(webSiteToggleAdapter);
+        searchView = view.findViewById(R.id.searchView);
+        searchButton = view.findViewById(R.id.search_button);
+        searchButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getContext(), SearchTabsActivity.class);
+                intent.putExtra("site_togglers_array", siteTogglers);
+                intent.putExtra("query", searchView.getQuery().toString());
+                startActivity(intent);
+            }
+        });
         if (siteTogglers.size() >=1) {
             webSiteToggleAdapter = new WebSiteToggleAdapter(getContext(), siteTogglers);
             recyclerView.setAdapter(webSiteToggleAdapter);
