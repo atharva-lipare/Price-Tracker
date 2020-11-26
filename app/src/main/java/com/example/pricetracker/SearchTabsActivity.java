@@ -19,6 +19,7 @@ import java.util.ArrayList;
 public class SearchTabsActivity extends AppCompatActivity {
     private ArrayList<SiteToggler> siteTogglers;
     private String query;
+    WebViewFragment webViewFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,15 +35,17 @@ public class SearchTabsActivity extends AppCompatActivity {
     }
 
     private void initViewPager() {
-        ViewPager viewPager = findViewById(R.id.search_view_pager);
+        CustomViewPager viewPager = findViewById(R.id.search_view_pager);
+        viewPager.setPagingEnabled(false);
         TabLayout tabLayout = findViewById(R.id.search_tab_layout);
+
         ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
         for (SiteToggler siteToggler : siteTogglers) {
             if (siteToggler.isChecked()) {
                 Bundle bundle = new Bundle();
                 bundle.putString("url", siteToggler.getSiteName());
                 bundle.putString("query", query);
-                WebViewFragment webViewFragment = new WebViewFragment();
+                webViewFragment = new WebViewFragment();
                 webViewFragment.setArguments(bundle);
                 viewPagerAdapter.addFragment(webViewFragment, siteToggler.getSiteName());
             }

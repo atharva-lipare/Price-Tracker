@@ -3,8 +3,11 @@ package com.example.pricetracker;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebResourceRequest;
@@ -18,6 +21,8 @@ import android.webkit.WebViewClient;
  * create an instance of this fragment.
  */
 public class WebViewFragment extends Fragment {
+    WebView webView;
+    SwipeRefreshLayout swipeRefreshLayout;
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -66,11 +71,36 @@ public class WebViewFragment extends Fragment {
         mParam1 = bundle.getString(ARG_PARAM1);
         mParam2 = bundle.getString(ARG_PARAM2);
         View view = inflater.inflate(R.layout.fragment_web_view, container, false);
-        WebView webView = view.findViewById(R.id.webView);
+        webView = view.findViewById(R.id.webView);
+        swipeRefreshLayout = view.findViewById(R.id.swipe_refresh_layout);
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                webView.reload();
+            }
+        });
+        webView.setOnKeyListener(new View.OnKeyListener(){
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if (keyCode == KeyEvent.KEYCODE_BACK
+                        && event.getAction() == MotionEvent.ACTION_UP
+                        && webView.canGoBack())
+                {
+                    webView.goBack();
+                    return true;
+                }
+                return false;
+            }
+
+        });
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 return false;
+            }
+
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                swipeRefreshLayout.setRefreshing(false);
             }
         });
         WebSettings webSettings = webView.getSettings();
@@ -102,4 +132,6 @@ public class WebViewFragment extends Fragment {
                 return "https://www.amazon.in/s?k=" + mParam2.replace(' ', '+') + "&ref=nb_sb_noss";
         }
     }
+
+
 }
