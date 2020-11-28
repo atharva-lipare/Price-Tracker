@@ -93,10 +93,20 @@ public class MyScraper {
             product.setNumberOfRatings(0);
         }
 
+        Element elementImage = document.selectFirst("img.tileImg");
+        if (elementImage != null) {
+            junk = elementImage.toString();
+            product.setImageUrl(junk.substring(junk.indexOf("https://"), junk.indexOf(" class")-1));
+        }
+        else {
+            product.setImageUrl("NA");
+        }
+
         Log.e("jsoup_testing", product.getName());
         Log.e("jsoup_testing", String.valueOf(product.getPrice()));
         Log.e("jsoup_testing", String.valueOf(product.getRating()));
         Log.e("jsoup_testing", String.valueOf(product.getNumberOfRatings()));
+        Log.e("jsoup_testing", product.getImageUrl());
     }
 
     private void scrapePaytmMallProductInfo() throws IOException {
@@ -138,10 +148,20 @@ public class MyScraper {
             product.setNumberOfRatings(0);
         }
 
+        Element elementImage = document.selectFirst("div._3_E6._3H7I");
+        if (elementImage != null) {
+            junk = elementImage.toString();
+            product.setImageUrl(junk.substring(junk.indexOf("https://"), junk.indexOf(" role")-1));
+        }
+        else {
+            product.setImageUrl("NA");
+        }
+
         Log.e("jsoup_testing", product.getName());
         Log.e("jsoup_testing", String.valueOf(product.getPrice()));
         Log.e("jsoup_testing", String.valueOf(product.getRating()));
         Log.e("jsoup_testing", String.valueOf(product.getNumberOfRatings()));
+        Log.e("jsoup_testing", product.getImageUrl());
     }
 
     private void scrapeMyntraProductInfo() throws IOException {
@@ -228,10 +248,20 @@ public class MyScraper {
             product.setNumberOfRatings(0);
         }
 
+        Element elementImage = document.selectFirst("img.largeimage");
+        if (elementImage != null) {
+            junk = elementImage.toString();
+            product.setImageUrl(junk.substring(junk.indexOf("https://"), junk.indexOf(" alt")-1));
+        }
+        else {
+            product.setImageUrl("NA");
+        }
+
         Log.e("jsoup_testing", product.getName());
         Log.e("jsoup_testing", String.valueOf(product.getPrice()));
         Log.e("jsoup_testing", String.valueOf(product.getRating()));
         Log.e("jsoup_testing", String.valueOf(product.getNumberOfRatings()));
+        Log.e("jsoup_testing", product.getImageUrl());
     }
 
     private void scrapeBigbasketProductInfo() throws IOException {
@@ -272,10 +302,20 @@ public class MyScraper {
             product.setNumberOfRatings(0);
         }
 
+        Element elementImage = document.selectFirst("#thumb_0");
+        if (elementImage != null) {
+            junk = elementImage.toString();
+            product.setImageUrl(junk.substring(junk.indexOf("https://"), junk.indexOf(".jpg")+4));
+        }
+        else {
+            product.setImageUrl("NA");
+        }
+
         Log.e("jsoup_testing", product.getName());
         Log.e("jsoup_testing", String.valueOf(product.getPrice()));
         Log.e("jsoup_testing", String.valueOf(product.getRating()));
         Log.e("jsoup_testing", String.valueOf(product.getNumberOfRatings()));
+        Log.e("jsoup_testing", product.getImageUrl());
     }
 
     private void scrapeFlipkartProductInfo() throws IOException {
@@ -321,10 +361,20 @@ public class MyScraper {
             }
         }
 
+        Element elementImage = document.selectFirst("div.q6DClP");
+        if (elementImage != null) {
+            junk = elementImage.toString();
+            product.setImageUrl(junk.substring(junk.indexOf("https://"), junk.indexOf(")")));
+        }
+        else {
+            product.setImageUrl("NA");
+        }
+
         Log.e("jsoup_testing", product.getName());
         Log.e("jsoup_testing", String.valueOf(product.getPrice()));
         Log.e("jsoup_testing", String.valueOf(product.getRating()));
         Log.e("jsoup_testing", String.valueOf(product.getNumberOfRatings()));
+        Log.e("jsoup_testing", product.getImageUrl());
     }
 
     private void scrapeAmazonProductInfo() throws IOException {
@@ -352,7 +402,6 @@ public class MyScraper {
             else product.setPrice(0.0);
         }
 
-
         Element amazonRating = document.selectFirst("span.a-size-medium.a-color-base");
         if (amazonRating != null) {
             junk = amazonRating.text();
@@ -368,9 +417,31 @@ public class MyScraper {
             product.setNumberOfRatings(0);
         }
 
+        Element elementImage = document.selectFirst("img.a-dynamic-image.a-stretch-vertical");
+        if (elementImage != null) {
+            String junk = elementImage.toString();
+            product.setImageUrl(junk.substring(junk.indexOf(";https://")+1, junk.indexOf(".jpg&quot")+4));
+        }
+        else {
+            elementImage = document.selectFirst("img#landingImage.a-dynamic-image.a-stretch-horizontal");
+            if (elementImage != null) {
+                String junk = elementImage.toString();
+                product.setImageUrl(junk.substring(junk.indexOf(";https://")+1, junk.indexOf(".jpg&quot")+4));
+            }
+            else {
+                elementImage = document.selectFirst("img#imgBlkFront");
+                if (elementImage != null) {
+                    String junk = elementImage.toString();
+                    product.setImageUrl(junk.substring(junk.indexOf(";https://")+1, junk.indexOf(".jpg&quot")+4));
+                }
+                else product.setImageUrl("NA");
+            }
+        }
+
         Log.e("jsoup_testing", product.getName());
         Log.e("jsoup_testing", String.valueOf(product.getPrice()));
         Log.e("jsoup_testing", String.valueOf(product.getRating()));
         Log.e("jsoup_testing", String.valueOf(product.getNumberOfRatings()));
+        Log.e("jsoup_testing", product.getImageUrl());
     }
 }
