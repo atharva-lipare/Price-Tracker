@@ -47,7 +47,7 @@ public class SearchTabsActivity extends AppCompatActivity {
                 Log.e("url_testing", currentUrlOpen);
                 Log.e("url_testing", String.valueOf(isValidProductPage()));
                 if (isValidProductPage()) {
-                    new doIt().execute();
+                    new doItTracking().execute();
                 }
                 else {
                     Toast toast = Toast.makeText(getApplicationContext(), "Please click on a product page to track", Toast.LENGTH_LONG);
@@ -179,7 +179,7 @@ public class SearchTabsActivity extends AppCompatActivity {
         }
     }
 
-    public class doIt extends AsyncTask<Void, Void, Void> {
+    public class doItTracking extends AsyncTask<Void, Void, Void> {
 
         MyScraper myScraper;
         Product product;
@@ -191,8 +191,6 @@ public class SearchTabsActivity extends AppCompatActivity {
                 myScraper.scrapeProductInfo();
                 product = myScraper.getProduct();
                 Log.e("jsoup_testing", product.getName());
-                // Durvesh bhava add sql code here
-
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -202,6 +200,7 @@ public class SearchTabsActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
+            // TODO: Durvesh bhava add sql code below here
         }
     }
 
