@@ -6,15 +6,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
-import androidx.viewpager.widget.ViewPager;
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.SearchView;
-import android.widget.Switch;
 import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -29,7 +27,8 @@ public class SearchTabsActivity extends AppCompatActivity {
     private String currentSiteOpen;
     private String currentUrlOpen;
     WebViewFragment webViewFragment;
-    FloatingActionButton floatingActionButton;
+    FloatingActionButton floatingActionButtonTrack;
+    FloatingActionButton floatingActionButtonCompare;
     TabLayout tabLayout;
     ViewPagerAdapter viewPagerAdapter;
 
@@ -39,8 +38,8 @@ public class SearchTabsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_search_tabs);
         getIntentMethod();
         initViewPager();
-        floatingActionButton = findViewById(R.id.floatingActionButton_track);
-        floatingActionButton.setOnClickListener(new View.OnClickListener() {
+        floatingActionButtonTrack = findViewById(R.id.floatingActionButton_track);
+        floatingActionButtonTrack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 WebViewFragment fragment = viewPagerAdapter.getCurrentFragment();
@@ -52,6 +51,24 @@ public class SearchTabsActivity extends AppCompatActivity {
                 }
                 else {
                     Toast toast = Toast.makeText(getApplicationContext(), "Please click on a product page to track", Toast.LENGTH_LONG);
+                    toast.show();
+                }
+            }
+        });
+        floatingActionButtonCompare = findViewById(R.id.floatingActionButtonCompare);
+        floatingActionButtonCompare.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                WebViewFragment fragment = viewPagerAdapter.getCurrentFragment();
+                currentUrlOpen = fragment.webView.getUrl();
+                Log.e("url_testing", currentUrlOpen);
+                Log.e("url_testing", String.valueOf(isValidProductPage()));
+                if (isValidProductPage()) {
+                    doItCompare doItCompare = new doItCompare();
+                    doItCompare.execute();
+                }
+                else {
+                    Toast toast = Toast.makeText(getApplicationContext(), "Please click on a product page to compare", Toast.LENGTH_LONG);
                     toast.show();
                 }
             }
@@ -173,7 +190,7 @@ public class SearchTabsActivity extends AppCompatActivity {
                 myScraper = new MyScraper(currentUrlOpen, currentSiteOpen);
                 myScraper.scrapeProductInfo();
                 product = myScraper.getProduct();
-
+                Log.e("jsoup_testing", product.getName());
                 // Durvesh bhava add sql code here
 
             } catch (IOException e) {
@@ -185,6 +202,34 @@ public class SearchTabsActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
+        }
+    }
+
+    public class doItCompare extends AsyncTask<Void, Void, Void> {
+
+        public MyScraper myScraper;
+        public Product product;
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            try {
+                myScraper = new MyScraper(currentUrlOpen, currentSiteOpen);
+                myScraper.scrapeProductInfo();
+                product = myScraper.getProduct();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            Log.e("jsoup_testing", product.getName());
+            Intent intent = new Intent(SearchTabsActivity.this, QuickComparisonActivity.class);
+            intent.putExtra("site_togglers_array", siteTogglers);
+            intent.putExtra("productName", product.getName());
+            startActivity(intent);
         }
     }
 }

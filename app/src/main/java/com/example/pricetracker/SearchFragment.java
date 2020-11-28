@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.SearchView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -82,13 +83,22 @@ public class SearchFragment extends Fragment {
         searchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                if (searchView.getQuery().toString().isEmpty()) {
+                    Toast toast = Toast.makeText(getActivity(), "Please enter a search query", Toast.LENGTH_LONG);
+                    toast.show();
+                    return;
+                }
                 ArrayList<SiteToggler> checkedSiteTogglers = new ArrayList<>();
                 for (SiteToggler siteToggler : siteTogglers) {
                     if (siteToggler.isChecked()) {
                         checkedSiteTogglers.add(siteToggler);
                     }
                 }
-                if (checkedSiteTogglers.isEmpty()) return;
+                if (checkedSiteTogglers.isEmpty()) {
+                    Toast toast = Toast.makeText(getActivity(), "Please select a site", Toast.LENGTH_LONG);
+                    toast.show();
+                    return;
+                }
                 Intent intent = new Intent(getContext(), SearchTabsActivity.class);
                 intent.putExtra("site_togglers_array", checkedSiteTogglers);
                 intent.putExtra("query", searchView.getQuery().toString());

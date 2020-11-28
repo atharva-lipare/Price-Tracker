@@ -344,7 +344,14 @@ public class MyScraper {
         if (price_1 != null) {
             product.setPrice(Double.valueOf(price_1.text().replaceAll(ONLY_DIGITS_AND_DECIMAL_REGEX, "")));
         }
-        else product.setPrice(0.0);
+        else {
+            Element price_2 = document.selectFirst(".price3P");
+            if (price_2 != null) {
+                product.setPrice(Double.valueOf(price_2.text().replaceAll(ONLY_DIGITS_AND_DECIMAL_REGEX, "")));
+            }
+            else product.setPrice(0.0);
+        }
+
 
         Element amazonRating = document.selectFirst("span.a-size-medium.a-color-base");
         if (amazonRating != null) {
