@@ -190,7 +190,6 @@ public class SearchTabsActivity extends AppCompatActivity {
                 myScraper = new MyScraper(currentUrlOpen, currentSiteOpen);
                 myScraper.scrapeProductInfo();
                 product = myScraper.getProduct();
-                Log.e("jsoup_testing", product.getName());
             } catch (IOException e) {
                 e.printStackTrace();
             }
