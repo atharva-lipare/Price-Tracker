@@ -18,7 +18,7 @@ public class MyScraper {
     private String junk;
 
 
-    public MyScraper(String query, String site) throws IOException {
+    public MyScraper(String query, String site) {
         this.query = query;
         this.site = site;
         product = new Product(query, site);
@@ -87,7 +87,7 @@ public class MyScraper {
         Element snapdealNumRating = document.selectFirst("span.total-rating");
         if (snapdealNumRating != null) {
             junk = snapdealNumRating.text();
-            product.setNumberOfRatings(Integer.parseInt(junk.substring(0, junk.indexOf(' '))));
+            product.setNumberOfRatings(Integer.parseInt(junk.substring(0, junk.indexOf(' ')).replaceAll(ONLY_DIGITS_REGEX, "")));
         }
         else {
             product.setNumberOfRatings(0);
@@ -132,7 +132,7 @@ public class MyScraper {
         Element paytmNumRating = document.selectFirst("div._38Tb");
         if (paytmNumRating != null) {
             junk = paytmNumRating.text();
-            product.setNumberOfRatings(Integer.parseInt(junk.substring(0, junk.indexOf(' '))));
+            product.setNumberOfRatings(Integer.parseInt(junk.substring(0, junk.indexOf(' ')).replaceAll(ONLY_DIGITS_REGEX, "")));
         }
         else {
             product.setNumberOfRatings(0);
@@ -266,7 +266,7 @@ public class MyScraper {
         Element bigbasketNumRatings = document.selectFirst(".gmwyk");
         if (bigbasketNumRatings != null) {
             junk = bigbasketNumRatings.text();
-            product.setNumberOfRatings(Integer.parseInt(junk.substring(0, junk.indexOf(' '))));
+            product.setNumberOfRatings(Integer.parseInt(junk.substring(0, junk.indexOf(' ')).replaceAll(ONLY_DIGITS_REGEX, "")));
         }
         else {
             product.setNumberOfRatings(0);
@@ -329,10 +329,10 @@ public class MyScraper {
 
     private void scrapeAmazonProductInfo() throws IOException {
         document = Jsoup.connect(query)
-                .userAgent("Mozilla/5.0 (Linux; Android 8.0; Pixel 2 Build/OPD3.170816.012) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.87 Mobile Safari/537.36")
+                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0")
                 .get();
 
-        Element amazonProductName = document.selectFirst(".a-size-small.a-color-secondary.a-text-normal");
+        Element amazonProductName = document.selectFirst("#productTitle");
         if (amazonProductName != null) {
             product.setName(amazonProductName.text());
         }
@@ -340,25 +340,22 @@ public class MyScraper {
             product.setName("NA");
         }
 
-        Element price_1 = document.selectFirst(".priceBlockBuyingPriceString");
-        Element price_2 = document.selectFirst(".buyingPrice");
+        Element price_1 = document.selectFirst("#priceblock_ourprice");
         if (price_1 != null) {
             product.setPrice(Double.valueOf(price_1.text().replaceAll(ONLY_DIGITS_AND_DECIMAL_REGEX, "")));
         }
-        else if (price_2 != null) {
-            product.setPrice(Double.valueOf(price_2.text().replaceAll("[^\\d.]", "")));
-        }
         else product.setPrice(0.0);
 
-        Element amazonRating = document.selectFirst(".a-size-base.a-text-beside-button");
+        Element amazonRating = document.selectFirst("span.a-size-medium.a-color-base");
         if (amazonRating != null) {
             junk = amazonRating.text();
             product.setRating(junk.substring(0, junk.indexOf(' ')));
         }
 
-        Element amazonNumReviews = document.selectFirst(".a-size-base.a-color-tertiary.totalRatingCount");
+        Element amazonNumReviews = document.selectFirst(".a-row.a-spacing-medium.averageStarRatingNumerical");
         if (amazonNumReviews != null) {
-            product.setNumberOfRatings(Integer.parseInt(amazonNumReviews.text().replaceAll(ONLY_DIGITS_REGEX, "")));
+            junk = amazonNumReviews.text();
+            product.setNumberOfRatings(Integer.parseInt(junk.substring(0, junk.indexOf(' ')).replaceAll(ONLY_DIGITS_REGEX, "")));
         }
         else {
             product.setNumberOfRatings(0);
