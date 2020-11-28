@@ -82,8 +82,15 @@ public class SearchFragment extends Fragment {
         searchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                ArrayList<SiteToggler> checkedSiteTogglers = new ArrayList<>();
+                for (SiteToggler siteToggler : siteTogglers) {
+                    if (siteToggler.isChecked()) {
+                        checkedSiteTogglers.add(siteToggler);
+                    }
+                }
+                if (checkedSiteTogglers.isEmpty()) return;
                 Intent intent = new Intent(getContext(), SearchTabsActivity.class);
-                intent.putExtra("site_togglers_array", siteTogglers);
+                intent.putExtra("site_togglers_array", checkedSiteTogglers);
                 intent.putExtra("query", searchView.getQuery().toString());
                 startActivity(intent);
             }

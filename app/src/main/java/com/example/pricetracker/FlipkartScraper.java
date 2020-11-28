@@ -6,7 +6,7 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.util.ArrayList;
-
+/*
 public class FlipkartScraper implements MyScraper {
     public String productName, searchQuery;
     public ArrayList<String> names, prices, recommendations;
@@ -58,3 +58,4 @@ public class FlipkartScraper implements MyScraper {
 
     }
 }
+*/

@@ -5,8 +5,9 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-
+/*
 public class AmazonScraper implements MyScraper {
+
     public String productName, searchQuery;
     public ArrayList<String> names, prices, recommendations;
     private Document page;
@@ -56,3 +57,4 @@ public class AmazonScraper implements MyScraper {
 
     }
 }
+*/

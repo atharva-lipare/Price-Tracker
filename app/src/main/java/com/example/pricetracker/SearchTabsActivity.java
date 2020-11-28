@@ -8,18 +8,30 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.SearchView;
 import android.widget.Switch;
+import android.widget.Toast;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class SearchTabsActivity extends AppCompatActivity {
     private ArrayList<SiteToggler> siteTogglers;
     private String query;
+    private String currentSiteOpen;
+    private String currentUrlOpen;
     WebViewFragment webViewFragment;
+    FloatingActionButton floatingActionButton;
+    TabLayout tabLayout;
+    ViewPagerAdapter viewPagerAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,6 +39,23 @@ public class SearchTabsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_search_tabs);
         getIntentMethod();
         initViewPager();
+        floatingActionButton = findViewById(R.id.floatingActionButton_track);
+        floatingActionButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                WebViewFragment fragment = viewPagerAdapter.getCurrentFragment();
+                currentUrlOpen = fragment.webView.getUrl();
+                Log.e("url_testing", currentUrlOpen);
+                Log.e("url_testing", String.valueOf(isValidProductPage()));
+                if (isValidProductPage()) {
+                    new doIt().execute();
+                }
+                else {
+                    Toast toast = Toast.makeText(getApplicationContext(), "Please click on a product page to track", Toast.LENGTH_LONG);
+                    toast.show();
+                }
+            }
+        });
     }
 
     private void getIntentMethod() {
@@ -37,24 +66,38 @@ public class SearchTabsActivity extends AppCompatActivity {
     private void initViewPager() {
         CustomViewPager viewPager = findViewById(R.id.search_view_pager);
         viewPager.setPagingEnabled(false);
-        TabLayout tabLayout = findViewById(R.id.search_tab_layout);
-
-        ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
-        for (SiteToggler siteToggler : siteTogglers) {
-            if (siteToggler.isChecked()) {
-                Bundle bundle = new Bundle();
-                bundle.putString("url", siteToggler.getSiteName());
-                bundle.putString("query", query);
-                webViewFragment = new WebViewFragment();
-                webViewFragment.setArguments(bundle);
-                viewPagerAdapter.addFragment(webViewFragment, siteToggler.getSiteName());
+        tabLayout = findViewById(R.id.search_tab_layout);
+        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                currentSiteOpen = tab.getText().toString();
             }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+
+            }
+        });
+        viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
+        for (SiteToggler siteToggler : siteTogglers) {
+            Bundle bundle = new Bundle();
+            bundle.putString("url", siteToggler.getSiteName());
+            bundle.putString("query", query);
+            webViewFragment = new WebViewFragment();
+            webViewFragment.setArguments(bundle);
+            viewPagerAdapter.addFragment(webViewFragment, siteToggler.getSiteName());
         }
         viewPager.setAdapter(viewPagerAdapter);
         tabLayout.setupWithViewPager(viewPager);
     }
 
     public static class ViewPagerAdapter extends FragmentPagerAdapter {
+        private WebViewFragment currentFragment;
         private ArrayList<Fragment> fragments;
         private ArrayList<String> titles;
         public ViewPagerAdapter(@NonNull FragmentManager fm) {
@@ -83,6 +126,65 @@ public class SearchTabsActivity extends AppCompatActivity {
         @Override
         public CharSequence getPageTitle(int position) {
             return titles.get(position);
+        }
+
+        @Override
+        public void setPrimaryItem(@NonNull ViewGroup container, int position, @NonNull Object object) {
+            if (getCurrentFragment() != object) {
+                currentFragment = (WebViewFragment) object;
+            }
+            super.setPrimaryItem(container, position, object);
+        }
+
+        public WebViewFragment getCurrentFragment() {
+            return currentFragment;
+        }
+    }
+
+    private boolean isValidProductPage() {
+        switch (currentSiteOpen) {
+            case "Amazon":
+                return currentUrlOpen.contains("/dp/") || currentUrlOpen.contains("/gp/");
+            case "Flipkart":
+                return currentUrlOpen.contains("/p/") && currentUrlOpen.contains("pid=");
+            case "Bigbasket":
+                return currentUrlOpen.contains("/pd/");
+            case "JioMart":
+                return currentUrlOpen.contains("/p/");
+            case "Myntra":
+                return currentUrlOpen.contains("/buy");
+            case "Paytm Mall":
+                return currentUrlOpen.contains("?product_id=") || currentUrlOpen.contains("?sid=") || currentUrlOpen.contains("pdp") ;
+            case "Snapdeal":
+                return currentUrlOpen.contains("/product/");
+            default:
+                return false;
+        }
+    }
+
+    public class doIt extends AsyncTask<Void, Void, Void> {
+
+        MyScraper myScraper;
+        Product product;
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            try {
+                myScraper = new MyScraper(currentUrlOpen, currentSiteOpen);
+                myScraper.scrapeProductInfo();
+                product = myScraper.getProduct();
+
+                // Durvesh bhava add sql code here
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
         }
     }
 }
