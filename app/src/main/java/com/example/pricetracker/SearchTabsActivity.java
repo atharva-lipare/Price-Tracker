@@ -190,6 +190,9 @@ public class SearchTabsActivity extends AppCompatActivity {
                 myScraper = new MyScraper(currentUrlOpen, currentSiteOpen);
                 myScraper.scrapeProductInfo();
                 product = myScraper.getProduct();
+
+                // TODO: Durvesh bhava add sql code below here
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -199,7 +202,6 @@ public class SearchTabsActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            // TODO: Durvesh bhava add sql code below here
         }
     }
 
