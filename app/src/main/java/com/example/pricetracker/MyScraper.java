@@ -1,27 +1,29 @@
 package com.example.pricetracker;
 
+import android.Manifest;
 import android.util.Log;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class MyScraper {
     private static final String ONLY_DIGITS_REGEX = "[^\\d]";
     private static final String ONLY_DIGITS_AND_DECIMAL_REGEX = "[^\\d.]";
+    private static final int MAX_ELE_TO_SHOW = 4;
     private String query;
     private String site;
     private Product product;
     private Document document;
     private String junk;
 
-
     public MyScraper(String query, String site) {
         this.query = query;
         this.site = site;
-        product = new Product(query, site);
     }
 
     public Product getProduct() {
@@ -29,6 +31,7 @@ public class MyScraper {
     }
 
     public void scrapeProductInfo() throws IOException {
+        product = new Product(query, site);
         switch (site) {
             case "Amazon":
                 scrapeAmazonProductInfo();
@@ -443,5 +446,258 @@ public class MyScraper {
         Log.e("jsoup_testing", String.valueOf(product.getRating()));
         Log.e("jsoup_testing", String.valueOf(product.getNumberOfRatings()));
         Log.e("jsoup_testing", product.getImageUrl());
+    }
+
+    public ArrayList<Product> scrapeAmazonProducts() throws IOException {
+        ArrayList<Product> sol = new ArrayList<>();
+        Document document = Jsoup.connect(getSearchQuery(site, query))
+                .userAgent("Mozilla/5.0 (Linux; Android 8.0; Pixel 2 Build/OPD3.170816.012) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.87 Mobile Safari/537.36")
+                .get();
+
+        Elements names = document.select("span.a-size-small.a-color-base.a-text-normal");
+        int numEle = names.size();
+        for (int i = 0; i < Math.min(MAX_ELE_TO_SHOW, numEle); i++) {
+            sol.add(new Product());
+        }
+
+        //Log.e("compare_testing", String.valueOf(sol.size()));
+
+        if (!names.isEmpty()) {
+            for (int i = 0; i < Math.min(MAX_ELE_TO_SHOW, names.size()); i++) {
+                sol.get(i).setName(names.get(i).text());
+            }
+        }
+
+        Elements prices = document.select("span.a-price-whole");
+        if (!prices.isEmpty()) {
+            for (int i = 0; i < sol.size(); i++) {
+                sol.get(i).setPrice(Double.valueOf(prices.get(i).text().replaceAll(ONLY_DIGITS_AND_DECIMAL_REGEX, "")));
+            }
+        }
+
+        Elements prodLink = document.select("a.a-link-normal.a-text-normal");
+        if (!prodLink.isEmpty()) {
+            for (int i = 0, j = 0; i < sol.size() * 4; i+=4, j++) {
+                //System.out.println("https://www.amazon.in" + prodLink.get(i).attr("href"));
+                sol.get(j).setUrl("https://www.amazon.in" + prodLink.get(i).attr("href"));
+            }
+        }
+
+        Elements imgUrls = document.select("img.s-image");
+        if (!imgUrls.isEmpty()) {
+            for (int i = 0; i < sol.size(); i++) {
+                //System.out.println(imgUrls.get(i).attr("src"));
+                sol.get(i).setImageUrl(imgUrls.get(i).attr("src"));
+            }
+        }
+
+        Elements ratings = document.select("i.a-icon.a-icon-star-small.a-icon-star-small");
+        if (!ratings.isEmpty()) {
+            for (int i = 0; i < sol.size(); i++) {
+                //System.out.println(ratings.get(i).text());
+                junk = ratings.get(i).text();
+                sol.get(i).setRating(junk.substring(0, junk.indexOf(' ')));
+            }
+        }
+
+        return sol;
+    }
+
+    public ArrayList<Product> scrapeFlipkartProducts() throws IOException {
+        /*
+        ArrayList<Product> sol = new ArrayList<>();
+        Document document = Jsoup.connect(getSearchQuery(site, query))
+                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0")
+                .get();
+
+        Elements names = document.select("div._4rR01T");
+        if (!names.isEmpty()) {
+            for (int i = 0; i < Math.min(MAX_ELE_TO_SHOW, names.size()); i++) {
+                System.out.println(names.get(i).text());
+            }
+        }
+        else {
+            names = document.select("a.s1Q9rs");
+            if (!names.isEmpty()) {
+                for (int i = 0; i < Math.min(MAX_ELE_TO_SHOW, names.size()); i++) {
+                    System.out.println(names.get(i).attr("title"));
+                }
+            }
+            else {
+                return null;
+            }
+        }
+
+        for (int i = 0; i < Math.min(MAX_ELE_TO_SHOW, names.size()); i++) {
+            sol.add(new Product());
+        }
+
+        Elements prices = document.select("div._30jeq3");
+        if (prices.size() > 0) {
+            for (int i = 0; i < Math.min(MAX_ELE_TO_SHOW, prices.size()); i++) {
+                System.out.println(prices.get(i).text());
+            }
+        }
+        else {
+            prices = document.select("div._30jeq3");
+            if (!prices.isEmpty()) {
+                for (int i = 0; i < Math.min(MAX_ELE_TO_SHOW, prices.size()); i++) {
+                    System.out.println(prices.get(i).text());
+                }
+            }
+        }
+
+        boolean isImage = false;
+        Elements prodLink = document.select("a._1fQZEK");
+        ArrayList<String> imgQueries = new ArrayList<>();
+        if (!prodLink.isEmpty()) {
+            isImage = true;
+            for (int i = 0; i < Math.min(MAX_ELE_TO_SHOW, prodLink.size()); i++) {
+                System.out.println("https://www.flipkart.com" + prodLink.get(i).attr("href"));
+                imgQueries.add("https://www.flipkart.com" + prodLink.get(i).attr("href"));
+            }
+        }
+        else {
+            prodLink = document.select("a.s1Q9rs");
+            if (!prodLink.isEmpty()) {
+                isImage = true;
+                for (int i = 0; i < Math.min(MAX_ELE_TO_SHOW, prodLink.size()); i++) {
+                    System.out.println("https://www.flipkart.com" + prodLink.get(i).attr("href"));
+                    imgQueries.add("https://www.flipkart.com" + prodLink.get(i).attr("href"));
+                }
+            }
+        }
+
+        if (isImage) {
+            for (int i = 0; i < Math.min(MAX_ELE_TO_SHOW, imgQueries.size()); i++) {
+                Document documentImg = Jsoup.connect(imgQueries.get(i))
+                        .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0")
+                        .get();
+                Element elementImage = documentImg.selectFirst("div.q6DClP");
+                if (elementImage != null) {
+                    junk = elementImage.toString();
+                    System.out.println(junk.substring(junk.indexOf("https://"), junk.indexOf(")")));
+                }
+                else {
+                    System.out.println("NA");
+                }
+            }
+        }
+
+        Elements ratings = document.select("div._3LWZlK");
+        if (!ratings.isEmpty()) {
+            for (int i = 0; i < Math.min(MAX_ELE_TO_SHOW, ratings.size()); i++) {
+                System.out.println(ratings.get(i).text());
+            }
+        }
+
+         */
+        return null;
+    }
+
+    public ArrayList<Product> scrapePaytmMallProducts() {
+        /*
+        Document document = Jsoup.connect(query)
+                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0")
+                .get();
+
+        Elements names = document.select("div.UGUy");
+        if (!names.isEmpty()) {
+            for (int i = 0; i < Math.min(MAX_ELE_TO_SHOW, names.size()); i++) {
+                System.out.println(names.get(i).text());
+            }
+        }
+
+        Elements prices = document.select("div._1kMS");
+        if (!prices.isEmpty()) {
+            for (int i = 0; i < Math.min(MAX_ELE_TO_SHOW, prices.size()); i++) {
+                System.out.println(prices.get(i).text());
+            }
+        }
+
+        Elements prodLinks = document.select("a._8vVO");
+        if (!prodLinks.isEmpty()) {
+            for (int i = 0;  i < Math.min(MAX_ELE_TO_SHOW, prodLinks.size()); i++) {
+                System.out.println("https://paytmmall.com" + prodLinks.get(i).attr("href"));
+            }
+        }
+
+        Elements imgUrl = document.select("div._3nWP img");
+        if (!imgUrl.isEmpty()) {
+            for (int i = 0; i < Math.min(MAX_ELE_TO_SHOW, imgUrl.size()); i++) {
+                System.out.println(imgUrl.get(i).attr("src"));
+            }
+        }
+
+         */
+        return null;
+    }
+
+    public ArrayList<Product> scrapeSnapdealProducts() {
+        /*
+        Document document = Jsoup.connect(query)
+                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0")
+                .get();
+
+        Elements names = document.select("p.product-title");
+        if (!names.isEmpty()) {
+            for (int i = 0; i < Math.min(MAX_ELE_TO_SHOW, names.size()); i++) {
+                System.out.println(names.get(i).text());
+            }
+        }
+
+        Elements prices = document.select("span.lfloat.product-price");
+        if (!prices.isEmpty()) {
+            for (int i = 0; i < Math.min(MAX_ELE_TO_SHOW, prices.size()); i++) {
+                System.out.println(prices.get(i).attr("data-price"));
+            }
+        }
+
+        Elements prodLinks = document.select("div.product-tuple-image a");
+        if (!prodLinks.isEmpty()) {
+            for (int i = 0; i < Math.min(MAX_ELE_TO_SHOW, prodLinks.size()); i++) {
+                System.out.println(prodLinks.get(i).attr("href"));
+            }
+        }
+
+        Elements imgUrl = document.select("div.product-tuple-image img");
+        if (!imgUrl.isEmpty()) {
+            for (int i = 0; i < Math.min(MAX_ELE_TO_SHOW, imgUrl.size()); i++) {
+                System.out.println(imgUrl.get(i).attr("src"));
+            }
+        }
+
+        Elements ratings = document.select("div.filled-stars");
+        if (!ratings.isEmpty()) {
+            for (int i = 0; i < Math.min(MAX_ELE_TO_SHOW, ratings.size()); i++) {
+                double sol = 100.00;
+                sol = Double.parseDouble(ratings.get(i).attr("style").toString().replaceAll(ONLY_DIGITS_AND_DECIMAL_REGEX, "")) / sol * 5.00;
+                System.out.println(sol);
+            }
+        }
+
+         */
+        return null;
+    }
+
+    public String getSearchQuery(String marketPlace, String searchQuery) {
+        switch (marketPlace) {
+            case "Amazon":
+                return "https://www.amazon.in/s?k=" + searchQuery.replace(' ', '+') + "&ref=nb_sb_noss";
+            case "Flipkart":
+                return "https://www.flipkart.com/search?q=" + searchQuery.replace(' ', '+');
+            case "Bigbasket":
+                return "https://www.bigbasket.com/ps/?q=" + searchQuery.replace(" ", "%20");
+            case "JioMart":
+                return "https://www.jiomart.com/catalogsearch/result?q=" + searchQuery.replace(" ", "%20");
+            case "Myntra":
+                return "https://www.myntra.com/" + searchQuery.replace(' ', '-');
+            case "Paytm Mall":
+                return "https://paytmmall.com/shop/search?userQuery=" + searchQuery.replace(" ", "%20");
+            case "Snapdeal":
+                return "https://m.snapdeal.com/search?keyword=" + searchQuery.replace(" ", "%20") + "&categoryXPath=ALL";
+            default:
+                return "https://www.amazon.in/s?k=" + searchQuery.replace(' ', '+') + "&ref=nb_sb_noss";
+        }
     }
 }
