@@ -29,7 +29,9 @@ public class SearchFragment extends Fragment {
     RecyclerView recyclerView;
     WebSiteToggleAdapter webSiteToggleAdapter;
     Button searchButton;
+    Button comparisonButton;
     SearchView searchView;
+    ArrayList<SiteToggler> checkedSiteTogglers;
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -83,26 +85,24 @@ public class SearchFragment extends Fragment {
         searchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (searchView.getQuery().toString().isEmpty()) {
-                    Toast toast = Toast.makeText(getActivity(), "Please enter a search query", Toast.LENGTH_LONG);
-                    toast.show();
-                    return;
+                if (validateBeforeClick()) {
+                    Intent intent = new Intent(getContext(), SearchTabsActivity.class);
+                    intent.putExtra("site_togglers_array", checkedSiteTogglers);
+                    intent.putExtra("query", searchView.getQuery().toString());
+                    startActivity(intent);
                 }
-                ArrayList<SiteToggler> checkedSiteTogglers = new ArrayList<>();
-                for (SiteToggler siteToggler : siteTogglers) {
-                    if (siteToggler.isChecked()) {
-                        checkedSiteTogglers.add(siteToggler);
-                    }
+            }
+        });
+        comparisonButton = view.findViewById(R.id.comparison_button);
+        comparisonButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (validateBeforeClick()) {
+                    Intent intent = new Intent(getContext(), QuickComparisonActivity.class);
+                    intent.putExtra("site_togglers_array", checkedSiteTogglers);
+                    intent.putExtra("query", searchView.getQuery().toString());
+                    startActivity(intent);
                 }
-                if (checkedSiteTogglers.isEmpty()) {
-                    Toast toast = Toast.makeText(getActivity(), "Please select a site", Toast.LENGTH_LONG);
-                    toast.show();
-                    return;
-                }
-                Intent intent = new Intent(getContext(), SearchTabsActivity.class);
-                intent.putExtra("site_togglers_array", checkedSiteTogglers);
-                intent.putExtra("query", searchView.getQuery().toString());
-                startActivity(intent);
             }
         });
         if (siteTogglers.size() >=1) {
@@ -111,5 +111,25 @@ public class SearchFragment extends Fragment {
             recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false));
         }
         return view;
+    }
+
+    private boolean validateBeforeClick() {
+        if (searchView.getQuery().toString().isEmpty()) {
+            Toast toast = Toast.makeText(getActivity(), "Please enter a search query", Toast.LENGTH_LONG);
+            toast.show();
+            return false;
+        }
+        checkedSiteTogglers = new ArrayList<>();
+        for (SiteToggler siteToggler : siteTogglers) {
+            if (siteToggler.isChecked()) {
+                checkedSiteTogglers.add(siteToggler);
+            }
+        }
+        if (checkedSiteTogglers.isEmpty()) {
+            Toast toast = Toast.makeText(getActivity(), "Please select a site", Toast.LENGTH_LONG);
+            toast.show();
+            return false;
+        }
+        return true;
     }
 }

@@ -5,13 +5,28 @@ public class Product {
     private String url;
     private String marketPlace;
     private Double price;
-    private String imageUrl; // TODO ; am unable to get this
+    private String imageUrl;
     private String rating;
     private int numberOfRatings;
 
     public Product(String product_url, String product_site) {
         this.url = product_url;
         this.marketPlace = product_site;
+        name = "NA";
+        price = 0.0;
+        imageUrl = "NA";
+        rating = "NA";
+        numberOfRatings = 0;
+    }
+
+    public Product() {
+        name = "NA";
+        url = "NA";
+        marketPlace = "NA";
+        price = 0.0;
+        imageUrl = "NA";
+        rating = "NA";
+        numberOfRatings = 0;
     }
 
     public String getName() { return name; }
