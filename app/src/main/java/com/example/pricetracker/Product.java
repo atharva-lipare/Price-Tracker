@@ -15,7 +15,7 @@ public class Product {
         name = "NA";
         price = 0.0;
         imageUrl = "NA";
-        rating = "NA";
+        rating = "";
         numberOfRatings = 0;
     }
 
@@ -25,7 +25,7 @@ public class Product {
         marketPlace = "NA";
         price = 0.0;
         imageUrl = "NA";
-        rating = "NA";
+        rating = "";
         numberOfRatings = 0;
     }
 

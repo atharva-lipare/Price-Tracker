@@ -12,6 +12,8 @@ import android.util.Log;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 public class QuickComparisonActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
@@ -42,21 +44,24 @@ public class QuickComparisonActivity extends AppCompatActivity {
     public class doItCompare extends AsyncTask<Void, Void, Void> {
 
         public MyScraper myScraper;
-        public Product product;
         ArrayList<Product> productsTemp;
 
         @Override
         protected Void doInBackground(Void... voids) {
-            try {
-                Log.e("compare_testing", query);
-                myScraper = new MyScraper(query, "Amazon");
-                productsTemp = myScraper.scrapeAmazonProducts();
-                products.addAll(productsTemp);
-                // TODO: add for other sites
-
-            }catch (IOException e) {
-                e.printStackTrace();
+            products = new ArrayList<>();
+            Log.e("compare_testing", query);
+            for (int i = 0; i < siteTogglers.size(); i++) {
+                myScraper = new MyScraper(query, siteTogglers.get(i).getSiteName());
+                try {
+                    productsTemp = myScraper.scrapeProductsCompare();
+                    if (productsTemp != null) {
+                        products.addAll(productsTemp);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
+
             return null;
         }
 
@@ -73,6 +78,11 @@ public class QuickComparisonActivity extends AppCompatActivity {
             recyclerView = findViewById(R.id.recyclerViewQuickComparison);
             layoutManager = new GridLayoutManager(context, 2);
             recyclerView.setLayoutManager(layoutManager);
+            Collections.sort(products, new Comparator<Product>() {
+                public int compare(Product p1, Product p2) {
+                    return p1.getPrice().compareTo(p2.getPrice());
+                }
+            });
             itemViewAdapter = new ItemViewAdapter(context, products);
             recyclerView.setAdapter(itemViewAdapter);
             recyclerView.setHasFixedSize(true);

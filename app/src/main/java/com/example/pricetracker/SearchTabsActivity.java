@@ -47,7 +47,7 @@ public class SearchTabsActivity extends AppCompatActivity {
                 Log.e("url_testing", currentUrlOpen);
                 Log.e("url_testing", String.valueOf(isValidProductPage()));
                 if (isValidProductPage()) {
-                    new doItTracking().execute();
+                    new doItTracking(currentUrlOpen, currentSiteOpen).execute();
                 }
                 else {
                     Toast toast = Toast.makeText(getApplicationContext(), "Please click on a product page to track", Toast.LENGTH_LONG);
@@ -103,8 +103,10 @@ public class SearchTabsActivity extends AppCompatActivity {
         viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
         for (SiteToggler siteToggler : siteTogglers) {
             Bundle bundle = new Bundle();
-            bundle.putString("url", siteToggler.getSiteName());
+            bundle.putString("marketPlace", siteToggler.getSiteName());
             bundle.putString("query", query);
+            bundle.putBoolean("isTrackButton", false);
+            bundle.putBoolean("isCompareButton", false);
             webViewFragment = new WebViewFragment();
             webViewFragment.setArguments(bundle);
             viewPagerAdapter.addFragment(webViewFragment, siteToggler.getSiteName());
@@ -158,7 +160,7 @@ public class SearchTabsActivity extends AppCompatActivity {
         }
     }
 
-    private boolean isValidProductPage() {
+    public boolean isValidProductPage() {
         switch (currentSiteOpen) {
             case "Amazon":
                 return currentUrlOpen.contains("/dp/") || currentUrlOpen.contains("/gp/");
@@ -179,19 +181,23 @@ public class SearchTabsActivity extends AppCompatActivity {
         }
     }
 
-    public class doItTracking extends AsyncTask<Void, Void, Void> {
-
+    public static class doItTracking extends AsyncTask<Void, Void, Void> {
+        String currentUrlOpen;
+        String currentSiteOpen;
         MyScraper myScraper;
         Product product;
+
+        public doItTracking(String currentUrlOpen, String currentSiteOpen) {
+            this.currentUrlOpen = currentUrlOpen;
+            this.currentSiteOpen = currentSiteOpen;
+        }
 
         @Override
         protected Void doInBackground(Void... voids) {
             try {
-                myScraper = new MyScraper(currentUrlOpen, currentSiteOpen);
+                myScraper = new MyScraper(this.currentUrlOpen, this.currentSiteOpen);
                 myScraper.scrapeProductInfo();
                 product = myScraper.getProduct();
-
-                // TODO: Durvesh bhava add sql code below here
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -228,7 +234,7 @@ public class SearchTabsActivity extends AppCompatActivity {
             Log.e("jsoup_testing", product.getName());
             Intent intent = new Intent(SearchTabsActivity.this, QuickComparisonActivity.class);
             intent.putExtra("site_togglers_array", siteTogglers);
-            intent.putExtra("productName", product.getName());
+            intent.putExtra("query", product.getName());
             startActivity(intent);
         }
     }

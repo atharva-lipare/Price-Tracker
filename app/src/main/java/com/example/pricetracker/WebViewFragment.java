@@ -15,6 +15,9 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import com.example.pricetracker.SearchTabsActivity.doItTracking;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
 /**
  * A simple {@link Fragment} subclass.
  * Use the {@link WebViewFragment#newInstance} factory method to
@@ -23,15 +26,21 @@ import android.webkit.WebViewClient;
 public class WebViewFragment extends Fragment {
     WebView webView;
     SwipeRefreshLayout swipeRefreshLayout;
+    FloatingActionButton trackingButton;
+    FloatingActionButton compareButton;
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "url";
+    private static final String ARG_PARAM1 = "marketPlace";
     private static final String ARG_PARAM2 = "query";
+    private static final String ARG_PARAM3 = "isTrackButton";
+    private static final String ARG_PARAM4 = "isCompareButton";
 
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
+    private boolean mParam3;
+    private boolean mParam4;
 
     public WebViewFragment() {
         // Required empty public constructor
@@ -70,7 +79,23 @@ public class WebViewFragment extends Fragment {
         Bundle bundle = this.getArguments();
         mParam1 = bundle.getString(ARG_PARAM1);
         mParam2 = bundle.getString(ARG_PARAM2);
+        mParam3 = bundle.getBoolean(ARG_PARAM3);
+        mParam4 = bundle.getBoolean(ARG_PARAM4);
         View view = inflater.inflate(R.layout.fragment_web_view, container, false);
+        trackingButton = view.findViewById(R.id.floatingActionButton_track_webview);
+        trackingButton.setEnabled(mParam3);
+        if (mParam3) {
+            trackingButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (isValidProductPage()) {
+                        new doItTracking(mParam2, mParam1).execute();
+                    }
+                }
+            });
+        }
+        compareButton = view.findViewById(R.id.floatingActionButtonCompareWebView);
+        compareButton.setEnabled(mParam4);
         webView = view.findViewById(R.id.webView);
         swipeRefreshLayout = view.findViewById(R.id.swipe_refresh_layout);
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -90,7 +115,6 @@ public class WebViewFragment extends Fragment {
                 }
                 return false;
             }
-
         });
         webView.setWebViewClient(new WebViewClient() {
             @Override
@@ -133,5 +157,25 @@ public class WebViewFragment extends Fragment {
         }
     }
 
-
+    public boolean isValidProductPage() {
+        String currentUrlOpen = webView.getUrl();
+        switch (mParam1) {
+            case "Amazon":
+                return currentUrlOpen.contains("/dp/") || currentUrlOpen.contains("/gp/");
+            case "Flipkart":
+                return currentUrlOpen.contains("/p/") && currentUrlOpen.contains("pid=");
+            case "Bigbasket":
+                return currentUrlOpen.contains("/pd/");
+            case "JioMart":
+                return currentUrlOpen.contains("/p/");
+            case "Myntra":
+                return currentUrlOpen.contains("/buy");
+            case "Paytm Mall":
+                return currentUrlOpen.contains("?product_id=") || currentUrlOpen.contains("?sid=") || currentUrlOpen.contains("pdp") ;
+            case "Snapdeal":
+                return currentUrlOpen.contains("/product/");
+            default:
+                return false;
+        }
+    }
 }

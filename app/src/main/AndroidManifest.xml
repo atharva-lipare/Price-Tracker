@@ -12,7 +12,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.PriceTracker">
-        <activity android:name=".QuickComparisonActivity"></activity>
+        <activity android:name=".ItemClickWebViewCompareActivity"></activity>
+        <activity android:name=".QuickComparisonActivity" />
         <activity android:name=".SearchTabsActivity" />
         <activity android:name=".MainActivity">
             <intent-filter>

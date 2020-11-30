@@ -1,7 +1,8 @@
 package com.example.pricetracker;
 
 import android.content.Context;
-import android.telephony.mbms.MbmsErrors;
+import android.content.Intent;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,6 +10,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -38,7 +42,7 @@ public class ItemViewAdapter extends RecyclerView.Adapter<ItemViewAdapter.ItemVi
         int inrSign = 0x20B9;
         holder.productPrice.setText(getEmojiByUnicode(inrSign) + products.get(position).getPrice().toString());
         int placeholder = R.drawable.ic_launcher_foreground;
-        switch (products.get(position).getName()) {
+        switch (products.get(position).getMarketPlace()) {
             case "Amazon":
                 placeholder = R.drawable.ic_amazon;
                 holder.siteLogo.setImageResource(R.drawable.ic_amazon);
@@ -65,6 +69,30 @@ public class ItemViewAdapter extends RecyclerView.Adapter<ItemViewAdapter.ItemVi
                 break;
         }
         Glide.with(context).load(products.get(position).getImageUrl()).placeholder(placeholder).into(holder.productImage);
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(context, ItemClickWebViewCompareActivity.class);
+                intent.putExtra("url", products.get(position).getUrl());
+                intent.putExtra("marketplace", products.get(position).getMarketPlace());
+                context.startActivity(intent);
+
+                // TODO: Don't know why below code isn't working, thus made another activity instead of reusing the fragment
+                /*
+                Bundle bundle = new Bundle();
+                bundle.putString("url", products.get(position).getUrl());
+                bundle.putString("query", "NA");
+                bundle.putBoolean("isTrackButton", true);
+                bundle.putBoolean("isCompareButton", true);
+                WebViewFragment webViewFragment = new WebViewFragment();
+                webViewFragment.setArguments(bundle);
+                ((QuickComparisonActivity)context)
+                        .getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.webView, webViewFragment, "WebViewFragment")
+                        .addToBackStack(null).commit();
+                 */
+            }
+        });
     }
 
     @Override
@@ -84,7 +112,7 @@ public class ItemViewAdapter extends RecyclerView.Adapter<ItemViewAdapter.ItemVi
             productName = itemView.findViewById(R.id.productName);
             productPrice = itemView.findViewById(R.id.itemPrice);
             productRating = itemView.findViewById(R.id.itemRating);
-            siteLogo = itemView.findViewById(R.id.siteLogo);
+            siteLogo = itemView.findViewById(R.id.siteLogoImageView);
             productImage = itemView.findViewById(R.id.itemImage);
         }
     }
