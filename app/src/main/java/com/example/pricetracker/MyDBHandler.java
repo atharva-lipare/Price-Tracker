@@ -2,6 +2,7 @@ package com.example.pricetracker;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Build;
@@ -9,6 +10,7 @@ import android.os.Build;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -66,53 +68,64 @@ public class MyDBHandler extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS "+TABLE_A_NAME+";");
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS "+TABLE_B_NAME+";");
-        DATABASE_VERSION+=1;
         onCreate(sqLiteDatabase);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     public boolean insert(Product product){
         SQLiteDatabase db = this.getWritableDatabase();
-        // If the product does not exist
-
-        ContentValues cv1 = new ContentValues();
-        cv1.put(A_COLUMN_NAME,product.getName());
-        cv1.put(A_COLUMN_URL,product.getUrl());
-        cv1.put(A_COLUMN_IMAGE_URL,product.getImageUrl());
-        cv1.put(A_COLUMN_MARKETPLACE,product.getMarketPlace());
-        cv1.put(A_COLUMN_CURRENT_PRICE,product.getPrice());
-        cv1.put(A_COLUMN_RATING,product.getRating());
-        cv1.put(A_COLUMN_NUM_RATINGS,product.getNumberOfRatings());
-        ContentValues cv2 = new ContentValues();
-        cv2.put(B_COLUMN_NAME,product.getName());
-        cv2.put(B_COLUMN_URL,product.getUrl());
-        cv2.put(B_COLUMN_MARKETPLACE,product.getMarketPlace());
-        cv2.put(B_COLUMN_PRICE,product.getPrice());
-        cv2.put(B_COLUMN_TIMESTAMP, LocalDateTime.now().toString());
-        db.insert(TABLE_A_NAME,null,cv1);
-        db.insert(TABLE_B_NAME,null,cv2);
-        return true;
+        String url = product.getUrl();
+        Cursor cursor = db.rawQuery("SELECT * FROM "+TABLE_A_NAME+" WHERE url="+url+";",null);
+        if(cursor == null || cursor.getCount()==0) {
+            ContentValues cv1 = new ContentValues();
+            cv1.put(A_COLUMN_NAME, product.getName());
+            cv1.put(A_COLUMN_URL, product.getUrl());
+            cv1.put(A_COLUMN_IMAGE_URL, product.getImageUrl());
+            cv1.put(A_COLUMN_MARKETPLACE, product.getMarketPlace());
+            cv1.put(A_COLUMN_CURRENT_PRICE, product.getPrice());
+            cv1.put(A_COLUMN_RATING, product.getRating());
+            cv1.put(A_COLUMN_NUM_RATINGS, product.getNumberOfRatings());
+            ContentValues cv2 = new ContentValues();
+            cv2.put(B_COLUMN_NAME, product.getName());
+            cv2.put(B_COLUMN_URL, product.getUrl());
+            cv2.put(B_COLUMN_MARKETPLACE, product.getMarketPlace());
+            cv2.put(B_COLUMN_PRICE, product.getPrice());
+            cv2.put(B_COLUMN_TIMESTAMP, LocalDateTime.now().toString());
+            db.insert(TABLE_A_NAME, null, cv1);
+            db.insert(TABLE_B_NAME, null, cv2);
+            return true;
+        }
+        else return false;
 
     }
     // Updating prices and adding it to table B
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void updatePrice(Product product){
         SQLiteDatabase db = this.getWritableDatabase();
-
-        // Check for Same day
+        String datetime = LocalDate.now().toString();
+        Cursor cursor = db.rawQuery("SELECT "+B_COLUMN_TIMESTAMP+" FROM "+TABLE_B_NAME+" WHERE timestamp LIKE "+datetime+"%;",null);
 
         // New Day case
-
-        ContentValues cv1 = new ContentValues();
-        cv1.put(A_COLUMN_CURRENT_PRICE,product.getPrice());
-        ContentValues cv2 = new ContentValues();
-        cv2.put(B_COLUMN_NAME,product.getName());
-        cv2.put(B_COLUMN_URL,product.getUrl());
-        cv2.put(B_COLUMN_MARKETPLACE,product.getMarketPlace());
-        cv2.put(B_COLUMN_PRICE,product.getPrice());
-        cv2.put(B_COLUMN_TIMESTAMP, LocalDateTime.now().toString());
-//        db.update(TABLE_A_NAME,cv1,"where url=producturl lol xd",);
-        db.insert(TABLE_B_NAME,null,cv2);
+        if(cursor == null || cursor.getCount()==0) {
+            ContentValues cv1 = new ContentValues();
+            cv1.put(A_COLUMN_CURRENT_PRICE, product.getPrice());
+            ContentValues cv2 = new ContentValues();
+            cv2.put(B_COLUMN_NAME, product.getName());
+            cv2.put(B_COLUMN_URL, product.getUrl());
+            cv2.put(B_COLUMN_MARKETPLACE, product.getMarketPlace());
+            cv2.put(B_COLUMN_PRICE, product.getPrice());
+            cv2.put(B_COLUMN_TIMESTAMP, LocalDateTime.now().toString());
+            // TODO: Need to check it once
+            db.update(TABLE_A_NAME,cv1,"timestamp LIKE ?",new String[]{datetime+"%"});
+            db.insert(TABLE_B_NAME, null, cv2);
+        }
+        else{
+            // Update the latest entry
+            ContentValues cv3 = new ContentValues();
+            cv3.put(B_COLUMN_TIMESTAMP,LocalDateTime.now().toString());
+            cv3.put(B_COLUMN_PRICE,product.getPrice());
+            db.update(TABLE_B_NAME,cv3,"timestamp LIKE ?",new String[]{datetime+"%"});
+        }
     }
 
     public void deleteProduct(Product product){
@@ -121,6 +134,25 @@ public class MyDBHandler extends SQLiteOpenHelper {
 
     public List<Product> getAllProducts(){
         List<Product> productsList = new ArrayList<Product>();
+        String query = "SELECT * FROM "+TABLE_A_NAME+";";
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = null;
+        if(db != null) {
+            cursor = db.rawQuery(query, null);
+            int i=0;
+            while(cursor.moveToNext()) {
+                Product p = new Product();
+                p.setName(cursor.getString(0));
+                p.setUrl(cursor.getString(1));
+                p.setImageUrl(cursor.getString(2));
+                p.setMarketPlace(cursor.getString(3));
+                p.setPrice(cursor.getDouble(4));
+                p.setRating(cursor.getString(5));
+                p.setNumberOfRatings(cursor.getInt(6));
+                productsList.add(p);
+            }
+        }
+
         return productsList;
     }
 
