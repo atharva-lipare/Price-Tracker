@@ -1,6 +1,5 @@
 package com.example.pricetracker;
 
-import android.Manifest;
 import android.util.Log;
 
 import org.jsoup.Jsoup;

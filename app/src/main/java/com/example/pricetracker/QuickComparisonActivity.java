@@ -5,7 +5,6 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
-import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -18,7 +17,7 @@ import java.util.Comparator;
 public class QuickComparisonActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     RecyclerView.LayoutManager layoutManager;
-    ItemViewAdapter itemViewAdapter;
+    ItemViewAdapterForComparison itemViewAdapter;
     private ArrayList<SiteToggler> siteTogglers;
     private ArrayList<Product> products;
     private String query;
@@ -29,6 +28,7 @@ public class QuickComparisonActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_quick_comparison);
         context = this;
+        setTitle("Quick Compare");
         getIntentMethod();
         doItCompare doItCompare = new doItCompare();
         doItCompare.execute();
@@ -68,6 +68,7 @@ public class QuickComparisonActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
+            if (products == null) return;
             for (Product product : products) {
                 Log.e("compare_testing", product.getName());
                 Log.e("compare_testing", String.valueOf(product.getPrice()));
@@ -83,7 +84,7 @@ public class QuickComparisonActivity extends AppCompatActivity {
                     return p1.getPrice().compareTo(p2.getPrice());
                 }
             });
-            itemViewAdapter = new ItemViewAdapter(context, products);
+            itemViewAdapter = new ItemViewAdapterForComparison(context, products);
             recyclerView.setAdapter(itemViewAdapter);
             recyclerView.setHasFixedSize(true);
         }

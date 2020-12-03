@@ -25,7 +25,6 @@ import static com.example.pricetracker.MainActivity.siteTogglers;
  * create an instance of this fragment.
  */
 public class SearchFragment extends Fragment {
-
     RecyclerView recyclerView;
     WebSiteToggleAdapter webSiteToggleAdapter;
     Button searchButton;

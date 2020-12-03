@@ -7,6 +7,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -22,6 +23,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class SearchTabsActivity extends AppCompatActivity {
+    private static Context context;
     private ArrayList<SiteToggler> siteTogglers;
     private String query;
     private String currentSiteOpen;
@@ -36,8 +38,11 @@ public class SearchTabsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search_tabs);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        setTitle("Quick Search");
         getIntentMethod();
         initViewPager();
+        context = this;
         floatingActionButtonTrack = findViewById(R.id.floatingActionButton_track);
         floatingActionButtonTrack.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -181,7 +186,7 @@ public class SearchTabsActivity extends AppCompatActivity {
         }
     }
 
-    public static class doItTracking extends AsyncTask<Void, Void, Void> {
+    private static class doItTracking extends AsyncTask<Void, Void, Void> {
         String currentUrlOpen;
         String currentSiteOpen;
         MyScraper myScraper;
@@ -198,7 +203,19 @@ public class SearchTabsActivity extends AppCompatActivity {
                 myScraper = new MyScraper(this.currentUrlOpen, this.currentSiteOpen);
                 myScraper.scrapeProductInfo();
                 product = myScraper.getProduct();
-
+                MyDBHandler myDBHandler = new MyDBHandler(context);
+                boolean b = myDBHandler.insertIntoTableB(product);
+                Log.e("db_testing", String.valueOf(b));
+                boolean b1 = myDBHandler.insertIntoTableA(product);
+                Log.e("db_testing", String.valueOf(b1));
+                ArrayList<Product> test = myDBHandler.getAllProductsFromTableA();
+                for (Product product : test) {
+                    Log.e("db_testing_table_A", product.getName());
+                }
+                test = myDBHandler.getAllProductsFromTableB();
+                for (Product product : test) {
+                    Log.e("db_testing_table_B", product.getName());
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -208,10 +225,11 @@ public class SearchTabsActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
+
         }
     }
 
-    public class doItCompare extends AsyncTask<Void, Void, Void> {
+    private class doItCompare extends AsyncTask<Void, Void, Void> {
 
         public MyScraper myScraper;
         public Product product;

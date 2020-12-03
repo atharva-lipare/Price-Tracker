@@ -2,7 +2,6 @@ package com.example.pricetracker;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,37 +9,34 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 
 import java.util.ArrayList;
 
-public class ItemViewAdapter extends RecyclerView.Adapter<ItemViewAdapter.ItemViewHolder> {
+public class ItemViewAdapterForHome extends RecyclerView.Adapter<ItemViewAdapterForHome.ItemViewHolder>{
     private ArrayList<Product> products;
     Context context;
 
-    public ItemViewAdapter(Context context, ArrayList<Product> products) {
+    public ItemViewAdapterForHome(ArrayList<Product> products, Context context) {
         this.products = products;
         this.context = context;
     }
 
     @NonNull
     @Override
-    public ItemViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new ItemViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.single_item_view, parent, false));
+    public ItemViewAdapterForHome.ItemViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        return new ItemViewAdapterForHome.ItemViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.single_item_view, parent, false));
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ItemViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ItemViewAdapterForHome.ItemViewHolder holder, int position) {
         holder.productName.setText(products.get(position).getName());
         int starUnicode = 0x2B50;
         holder.productRating.setText(products.get(position).getRating() + getEmojiByUnicode(starUnicode));
         int inrSign = 0x20B9;
-        holder.productPrice.setText(getEmojiByUnicode(inrSign) + products.get(position).getPrice().toString());
+        holder.productPrice.setText(getEmojiByUnicode(inrSign) + String.valueOf(products.get(position).getPrice()));
         int placeholder = R.drawable.ic_launcher_foreground;
         switch (products.get(position).getMarketPlace()) {
             case "Amazon":
@@ -72,25 +68,10 @@ public class ItemViewAdapter extends RecyclerView.Adapter<ItemViewAdapter.ItemVi
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(context, ItemClickWebViewCompareActivity.class);
+                Intent intent = new Intent(context, ItemClickHomeActivity.class);
                 intent.putExtra("url", products.get(position).getUrl());
                 intent.putExtra("marketplace", products.get(position).getMarketPlace());
                 context.startActivity(intent);
-
-                // TODO: Don't know why below code isn't working, thus made another activity instead of reusing the fragment
-                /*
-                Bundle bundle = new Bundle();
-                bundle.putString("url", products.get(position).getUrl());
-                bundle.putString("query", "NA");
-                bundle.putBoolean("isTrackButton", true);
-                bundle.putBoolean("isCompareButton", true);
-                WebViewFragment webViewFragment = new WebViewFragment();
-                webViewFragment.setArguments(bundle);
-                ((QuickComparisonActivity)context)
-                        .getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.webView, webViewFragment, "WebViewFragment")
-                        .addToBackStack(null).commit();
-                 */
             }
         });
     }
@@ -100,7 +81,7 @@ public class ItemViewAdapter extends RecyclerView.Adapter<ItemViewAdapter.ItemVi
         return products.size();
     }
 
-    public class ItemViewHolder extends RecyclerView.ViewHolder{
+    public class ItemViewHolder extends RecyclerView.ViewHolder {
         TextView productName;
         TextView productPrice;
         TextView productRating;

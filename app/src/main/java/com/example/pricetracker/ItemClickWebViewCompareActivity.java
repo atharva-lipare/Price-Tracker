@@ -3,8 +3,11 @@ package com.example.pricetracker;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -16,7 +19,11 @@ import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.io.IOException;
+import java.util.ArrayList;
+
 public class ItemClickWebViewCompareActivity extends AppCompatActivity {
+    private static Context context;
     WebView webView;
     FloatingActionButton track;
     String url;
@@ -27,13 +34,14 @@ public class ItemClickWebViewCompareActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_item_click_web_view_compare);
+        context = this;
         webView = findViewById(R.id.compareItemClickWebView);
         track = findViewById(R.id.compareItemClickActivityTrackBtn);
         track.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (isValidProductPage()) {
-                    new SearchTabsActivity.doItTracking(url, marketPlace).execute();
+                    new doItTracking(url, marketPlace).execute();
                 }
                 else {
                     Toast toast = Toast.makeText(getApplicationContext(), "Please click on a product page to track", Toast.LENGTH_LONG);
@@ -106,6 +114,52 @@ public class ItemClickWebViewCompareActivity extends AppCompatActivity {
                 return currentUrlOpen.contains("/product/");
             default:
                 return false;
+        }
+    }
+
+    private static class doItTracking extends AsyncTask<Void, Void, Void> {
+        String currentUrlOpen;
+        String currentSiteOpen;
+        MyScraper myScraper;
+        Product product;
+
+        public doItTracking(String currentUrlOpen, String currentSiteOpen) {
+            this.currentUrlOpen = currentUrlOpen;
+            this.currentSiteOpen = currentSiteOpen;
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            try {
+                myScraper = new MyScraper(this.currentUrlOpen, this.currentSiteOpen);
+                myScraper.scrapeProductInfo();
+                product = myScraper.getProduct();
+                if (product.getName().equals("NA")) {
+                    return null;
+                }
+                MyDBHandler myDBHandler = new MyDBHandler(context);
+                boolean b = myDBHandler.insertIntoTableB(product);
+                Log.e("db_testing", String.valueOf(b));
+                boolean b1 = myDBHandler.insertIntoTableA(product);
+                Log.e("db_testing", String.valueOf(b1));
+                ArrayList<Product> test = myDBHandler.getAllProductsFromTableA();
+                for (Product product : test) {
+                    Log.e("db_testing", product.getName());
+                }
+                test = myDBHandler.getAllProductsFromTableB();
+                for (Product product : test) {
+                    Log.e("db_testing_table_B", product.getName());
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+
         }
     }
 

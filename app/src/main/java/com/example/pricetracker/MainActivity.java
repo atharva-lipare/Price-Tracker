@@ -3,6 +3,12 @@ package com.example.pricetracker;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.work.Constraints;
+import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.NetworkType;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
 
 import android.os.Bundle;
 import android.view.MenuItem;
@@ -10,6 +16,7 @@ import android.view.MenuItem;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
     public static ArrayList<SiteToggler> siteTogglers;
@@ -27,9 +34,11 @@ public class MainActivity extends AppCompatActivity {
                 switch (item.getItemId()) {
                     case R.id.nav_search:
                         selectedFragment = new SearchFragment();
+                        setTitle("Price Tracker");
                         break;
                     case R.id.nav_home:
                         selectedFragment = new HomeFragment();
+                        setTitle("Home");
                         break;
                 }
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
@@ -39,6 +48,27 @@ public class MainActivity extends AppCompatActivity {
         });
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new SearchFragment()).commit();
         siteTogglers = getSiteTogglers();
+
+        Constraints constraints = new Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build();
+
+        /*OneTimeWorkRequest scrapNUpdate = new OneTimeWorkRequest.Builder(ScraperWorker.class)
+                .setConstraints(constraints)
+                //.setInitialDelay(1, TimeUnit.MINUTES)
+                .addTag("scraper")
+                .build();
+        WorkManager.getInstance(this).enqueue(scrapNUpdate);
+        */
+
+        PeriodicWorkRequest periodicWorkRequest = new PeriodicWorkRequest.Builder(ScraperWorker.class, 6, TimeUnit.HOURS)
+                .setConstraints(constraints)
+                .addTag("Update")
+                .build();
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork("Update", ExistingPeriodicWorkPolicy.KEEP, periodicWorkRequest);
+        //WorkManager.getInstance(this).cancelUniqueWork("Daily_Update");
+        //WorkManager.getInstance(this).cancelUniqueWork("Update");
+
     }
 
     private ArrayList<SiteToggler> getSiteTogglers() {
