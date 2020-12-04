@@ -142,14 +142,14 @@ public class ItemClickWebViewCompareActivity extends AppCompatActivity {
                 Log.e("db_testing", String.valueOf(b));
                 boolean b1 = myDBHandler.insertIntoTableA(product);
                 Log.e("db_testing", String.valueOf(b1));
-                ArrayList<Product> test = myDBHandler.getAllProductsFromTableA();
+                /*ArrayList<Product> test = myDBHandler.getAllProductsFromTableA();
                 for (Product product : test) {
                     Log.e("db_testing", product.getName());
                 }
                 test = myDBHandler.getAllProductsFromTableB();
                 for (Product product : test) {
                     Log.e("db_testing_table_B", product.getName());
-                }
+                }*/
             } catch (IOException e) {
                 e.printStackTrace();
             }

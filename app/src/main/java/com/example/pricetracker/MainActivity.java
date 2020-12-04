@@ -65,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
                 .setConstraints(constraints)
                 .addTag("Update")
                 .build();
-        WorkManager.getInstance(this).enqueueUniquePeriodicWork("Update", ExistingPeriodicWorkPolicy.KEEP, periodicWorkRequest);
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork("Update", ExistingPeriodicWorkPolicy.REPLACE, periodicWorkRequest);
         //WorkManager.getInstance(this).cancelUniqueWork("Daily_Update");
         //WorkManager.getInstance(this).cancelUniqueWork("Update");
 

@@ -79,8 +79,8 @@ public class ScraperWorker extends Worker {
                 }
                 boolean b2 = myDBHandler.insertIntoTableB(updated);
                 Log.e("worker_testing", String.valueOf(b2));
-                //boolean b3 = myDBHandler.updateTableB(updated);
-                //Log.e("worker_testing", String.valueOf(b3));
+                boolean b3 = myDBHandler.updateTableB(updated);
+                Log.e("worker_testing", String.valueOf(b3));
 
             } catch (IOException e) {
                 e.printStackTrace();

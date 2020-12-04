@@ -5,6 +5,7 @@ import android.os.Bundle;
 import androidx.fragment.app.Fragment;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -15,6 +16,10 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+import java.io.IOException;
+
 /**
  * A simple {@link Fragment} subclass.
  * Use the {@link WebViewHomeFragment#newInstance} factory method to
@@ -23,6 +28,7 @@ import android.webkit.WebViewClient;
 public class WebViewHomeFragment extends Fragment {
     private WebView webView;
     private SwipeRefreshLayout swipeRefreshLayout;
+    FloatingActionButton remFromFav;
 
 
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -71,6 +77,23 @@ public class WebViewHomeFragment extends Fragment {
         Bundle bundle = this.getArguments();
         mParam1 = bundle.getString(ARG_PARAM1);
         View view = inflater.inflate(R.layout.fragment_web_view_home, container, false);
+        remFromFav = view.findViewById(R.id.floatingActionButtonDeleteFav);
+        remFromFav.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                try {
+                    MyDBHandler myDBHandler = new MyDBHandler(getContext());
+                    String url = webView.getOriginalUrl();
+                    boolean b1 = myDBHandler.deleteFromTableA(url);
+                    Log.e("db_testing_remove", String.valueOf(b1));
+                    boolean b2 = myDBHandler.deleteFromTableB(url);
+                    Log.e("db_testing_remove", String.valueOf(b2));
+                }catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
         webView = view.findViewById(R.id.webViewHome);
         swipeRefreshLayout = view.findViewById(R.id.swipe_refresh_layout_home);
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
