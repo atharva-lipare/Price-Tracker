@@ -16,7 +16,6 @@ import java.util.ArrayList;
 public class ScraperWorker extends Worker {
 
     private NotificationManagerCompat notificationManagerCompat;
-    Double tempDbl = 0.0;
 
     ArrayList<Product> products;
     Context context;
@@ -41,7 +40,12 @@ public class ScraperWorker extends Worker {
             try {
                 myScraper.scrapeProductInfo();
                 Product updated = myScraper.getProduct();
-                if (updated.getName().equals("NA")) continue;
+                if (updated.getPrice() == 0.0) {
+                    updated.setPrice(product.getPrice());
+                }
+                if (updated.getName().equals("NA")) {
+                    updated.setName(product.getName());
+                }
                 if (!updated.getPrice().equals(product.getPrice())) {
                     Log.e("do_work_testing", updated.getPrice() + " " + product.getPrice());
                     boolean b1 = myDBHandler.updateTableA(updated);
@@ -79,12 +83,12 @@ public class ScraperWorker extends Worker {
                 }
                 boolean b2 = myDBHandler.insertIntoTableB(updated);
                 Log.e("worker_testing", String.valueOf(b2));
-                boolean b3 = myDBHandler.updateTableB(updated);
-                Log.e("worker_testing", String.valueOf(b3));
-
+                if (!b2) {
+                    boolean b3 = myDBHandler.updateTableB(updated);
+                    Log.e("worker_testing", String.valueOf(b3));
+                }
             } catch (IOException e) {
                 e.printStackTrace();
-                //return Result.failure();
             }
         }
 

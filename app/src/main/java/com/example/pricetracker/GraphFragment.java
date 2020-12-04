@@ -52,10 +52,6 @@ public class GraphFragment extends Fragment {
     ArrayList<String> xAxisValues;
     Context context;
 
-    SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
-    SimpleDateFormat forLabel = new SimpleDateFormat("dd-MMM");
-    //cal.setTime(sdf.parse("Mon Mar 14 16:02:37 GMT 2011"));// all done
-
 
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "url";
@@ -124,7 +120,6 @@ public class GraphFragment extends Fragment {
         XAxis xAxis = lineChart.getXAxis();
         xAxis.setDrawGridLines(false);
         xAxis.setLabelRotationAngle(-90);
-        //ArrayList<String> xAxisValues = new ArrayList<>(Arrays.asList("Mon", "Tues", "Wed", "Thurs", "Fri", "Sat"));
         xAxis.setLabelCount(xAxisValues.size(), true);
         xAxis.setValueFormatter(new IndexAxisValueFormatter(xAxisValues));
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
@@ -134,15 +129,6 @@ public class GraphFragment extends Fragment {
         yAxis.setSpaceTop(70f);
         yAxis.setSpaceBottom(30f);
         lineChart.getAxisRight().setEnabled(false);
-
-        /*values = new ArrayList<>();
-        values.add(new Entry(0, 45));
-        values.add(new Entry(1, 65));
-        values.add(new Entry(2, 35));
-        values.add(new Entry(3, 15));
-        values.add(new Entry(4, 85));
-        values.add(new Entry(5, 75));
-         */
 
         LineDataSet lineDataSet = new LineDataSet(values, "DS1");
         lineDataSet.setDrawIcons(false);
@@ -169,13 +155,6 @@ public class GraphFragment extends Fragment {
         }
         lineDataSet.setDrawFilled(true);
 
-
-
-        //yAxis.setValueFormatter(new IndexAxisValueFormatter(getYAxisValues()));
-
-        //ArrayList<ILineDataSet> dataSets = new ArrayList<>();
-        //dataSets.add(lineDataSet); // add the data sets
-
         // create a data object with the data sets
         LineData data = new LineData(lineDataSet);
         // set data
@@ -190,12 +169,6 @@ public class GraphFragment extends Fragment {
         xAxisValues = new ArrayList<>();
         values = new ArrayList<>();
         if (products == null) return;
-
-        Collections.sort(products, new Comparator<Product>() {
-            public int compare(Product p1, Product p2) {
-                return p1.getName().compareTo(p2.getName());
-            }
-        });
 
         Collections.sort(products, new Comparator<Product>() {
             DateFormat f = new SimpleDateFormat("dd-MM-yyyy");
@@ -214,10 +187,6 @@ public class GraphFragment extends Fragment {
             SimpleDateFormat new_format = new SimpleDateFormat("dd-MMM");
             Date date = pre_format.parse(products.get(i).getName());
             xAxisValues.add(new_format.format(date));
-
-
-            //xAxisValues.add(products.get(i).getName());
-            //xAxisValues.add(tempStr);
             double temp = products.get(i).getPrice();
             float temp1 = (float) temp;
             values.add(new Entry(i, temp1));

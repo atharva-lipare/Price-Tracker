@@ -30,14 +30,12 @@ public class ItemClickHomeActivity extends AppCompatActivity {
                 Bundle bundle;
                 switch (item.getItemId()) {
                     case R.id.nav_web_view:
-                        //bottomNavigationView.setSelectedItemId(R.id.nav_web_view);
                         bundle = new Bundle();
                         bundle.putString("url", url);
                         selectedFragment = new WebViewHomeFragment();
                         selectedFragment.setArguments(bundle);
                         break;
                     case R.id.nav_graph:
-                        //bottomNavigationView.setSelectedItemId(R.id.nav_graph);
                         bundle = new Bundle();
                         bundle.putString("url", url);
                         selectedFragment = new GraphFragment();
@@ -48,7 +46,6 @@ public class ItemClickHomeActivity extends AppCompatActivity {
                 return true;
             }
         });
-        //bottomNavigationView.setSelectedItemId(R.id.nav_web_view);
         Bundle bundle = new Bundle();
         bundle.putString("url", url);
         Fragment selectedFragment1 = new WebViewHomeFragment();
